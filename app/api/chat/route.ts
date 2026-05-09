@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
-import { streamText, convertToModelMessages } from "ai";
+import { streamText, convertToModelMessages, stepCountIs } from "ai";
 import type { UIMessage } from "ai";
 import { createClient } from "@/lib/supabase/server";
 import { route } from "@/lib/routing/engine";
 import { getLanguageModel } from "@/lib/providers/index";
 import { readSecret } from "@/lib/vault";
 import { estimateTokens } from "@/lib/utils";
+import { buildTools } from "@/lib/plugins/executor";
 import type { ProviderType, OptimizationPreferences } from "@/types/routing";
 
 export const maxDuration = 60;
@@ -50,7 +51,7 @@ export async function POST(req: Request) {
   const [profileResult, keysResult, pluginsResult] = await Promise.all([
     supabase.from("profiles").select("optimization_preferences").eq("id", user.id).single(),
     supabase.from("api_keys").select("id, provider, base_url").eq("user_id", user.id).eq("is_active", true),
-    supabase.from("user_plugins").select("plugin_slug").eq("user_id", user.id).eq("is_enabled", true),
+    supabase.from("user_plugins").select("plugin_slug, config").eq("user_id", user.id).eq("is_enabled", true),
   ]);
 
   const preferences = (profileResult.data?.optimization_preferences as unknown as OptimizationPreferences) ?? {
@@ -72,6 +73,9 @@ export async function POST(req: Request) {
   }
 
   const enabledPluginSlugs = (pluginsResult.data ?? []).map((p) => p.plugin_slug);
+  const userPluginConfigs = Object.fromEntries(
+    (pluginsResult.data ?? []).map((p) => [p.plugin_slug, (p.config ?? {}) as Record<string, string>])
+  );
 
   // Convert UIMessages to plain role/content for routing classifier
   const historyForRouter = messages.slice(0, -1).map((m) => ({
@@ -94,6 +98,7 @@ export async function POST(req: Request) {
       estimatedContextTokens: estimateTokens(messages.map((m) => lastUserText).join(" ")),
     });
   } catch (err) {
+    console.error("[chat] routing failed", { userId: user.id, error: err });
     return NextResponse.json(
       { error: err instanceof Error ? err.message : "Routing failed" },
       { status: 422 }
@@ -103,6 +108,7 @@ export async function POST(req: Request) {
   // Retrieve the winning provider key from Vault
   const winnerKeyMeta = keysResult.data?.find((k) => k.provider === decision.provider);
   if (!winnerKeyMeta) {
+    console.error("[chat] no key found for provider", { provider: decision.provider, userId: user.id });
     return NextResponse.json({ error: "Provider key not found" }, { status: 422 });
   }
 
@@ -119,7 +125,8 @@ export async function POST(req: Request) {
   let apiKey: string;
   try {
     apiKey = await readSecret(fullKey.vault_secret_id);
-  } catch {
+  } catch (err) {
+    console.error("[chat] vault read failed", { keyId: winnerKeyMeta.id, error: err });
     return NextResponse.json({ error: "Failed to retrieve API key" }, { status: 500 });
   }
 
@@ -153,12 +160,17 @@ export async function POST(req: Request) {
 
   const start = Date.now();
 
+  // Build plugin tools for enabled slugs
+  const tools = buildTools(enabledPluginSlugs, userPluginConfigs);
+  const hasTools = Object.keys(tools).length > 0;
+
   // Convert UIMessage[] → ModelMessage[] for the AI provider (async in v6)
   const modelMessages = await convertToModelMessages(messages);
 
   const result = streamText({
     model,
     messages: modelMessages,
+    ...(hasTools && { tools, stopWhen: stepCountIs(5) }),
     onFinish: async ({ text, usage }) => {
       if (!conversationId) return;
       await supabase.from("messages").insert({
