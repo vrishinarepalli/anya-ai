@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Nexus — Intelligent AI Orchestration",
+  title: "Anya — Intelligent AI Orchestration",
   description:
     "Multi-model AI orchestration platform. Bring your own API keys. The routing engine picks the optimal model for every request.",
 };

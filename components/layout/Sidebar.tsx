@@ -21,7 +21,8 @@ const NAV_ITEMS = [
   { href: "/workflows", label: "Workflows", icon: GitBranch },
   { href: "/plugins", label: "Plugins", icon: Puzzle },
   { href: "/analytics", label: "Analytics", icon: BarChart2 },
-  { href: "/settings/keys", label: "Settings", icon: Settings },
+  { href: "/settings/keys", label: "API Keys", icon: Settings },
+  { href: "/settings/preferences", label: "Preferences", icon: Puzzle },
 ];
 
 interface SidebarProps {
@@ -53,7 +54,7 @@ export function Sidebar({ user }: SidebarProps) {
           <div className="w-7 h-7 rounded-lg bg-violet-600 flex items-center justify-center">
             <Zap className="w-4 h-4 text-white" />
           </div>
-          <span className="font-semibold text-white text-sm tracking-tight">Nexus</span>
+          <span className="font-semibold text-white text-sm tracking-tight">Anya</span>
         </Link>
       </div>
 

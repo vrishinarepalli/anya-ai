@@ -31,7 +31,7 @@ export default function LoginPage() {
           <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-violet-600">
             <Zap className="w-6 h-6 text-white" />
           </div>
-          <h1 className="text-2xl font-semibold text-white tracking-tight">Nexus</h1>
+          <h1 className="text-2xl font-semibold text-white tracking-tight">Anya</h1>
           <p className="text-sm text-zinc-400">
             Intelligent AI orchestration — bring your own keys
           </p>
