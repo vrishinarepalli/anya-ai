@@ -1,4 +1,4 @@
-import type { RouterInput, RoutingDecision } from "@/types/routing";
+import type { RouterInput, RoutingDecision, IntentType } from "@/types/routing";
 import { MODEL_REGISTRY, TASK_TYPE_LABELS } from "./models";
 import { classifyIntent } from "./classifier";
 import { scoreModel } from "./scorer";
@@ -70,9 +70,9 @@ function buildDecision(
   provider: string,
   model: string,
   scored: ReturnType<typeof scoreModel>[],
-  intent: Parameters<typeof buildReasoning>[1],
+  intent: IntentType,
   tools: string[],
-  input: RouterInput,
+  _input: RouterInput,
   overrideReason: string
 ): RoutingDecision {
   return {
@@ -99,7 +99,7 @@ function resolveTools(enabledSlugs: string[]): string[] {
 
 function buildReasoning(
   winner: ReturnType<typeof scoreModel>,
-  intent: Parameters<typeof classifyIntent>[0] extends string ? never : ReturnType<typeof classifyIntent>["intent"],
+  intent: IntentType,
   complexity: string,
   tools: string[],
   confidence: number

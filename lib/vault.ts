@@ -1,4 +1,10 @@
 import { createServiceClient } from "@/lib/supabase/server";
+import type { SupabaseClient } from "@supabase/supabase-js";
+
+// Supabase Vault RPC wrappers are typed as `never` until the DB type is
+// regenerated from a live project. Cast to any for service-role vault calls —
+// these functions are defined in supabase/migrations/000_vault_wrappers.sql.
+type AnyRpc = (fn: string, args: Record<string, unknown>) => ReturnType<SupabaseClient["rpc"]>;
 
 /**
  * Store an API key in Supabase Vault.
@@ -12,7 +18,8 @@ export async function storeSecret(
   const supabase = await createServiceClient();
   const name = `nexus_${userId}_${provider}_${Date.now()}`;
 
-  const { data, error } = await supabase.rpc("vault_create_secret", {
+  const rpc = supabase.rpc.bind(supabase) as unknown as AnyRpc;
+  const { data, error } = await rpc("vault_create_secret", {
     secret,
     name,
     description: `API key for provider ${provider}, user ${userId}`,
@@ -29,7 +36,8 @@ export async function storeSecret(
 export async function readSecret(vaultSecretId: string): Promise<string> {
   const supabase = await createServiceClient();
 
-  const { data, error } = await supabase.rpc("vault_read_secret", {
+  const rpc = supabase.rpc.bind(supabase) as unknown as AnyRpc;
+  const { data, error } = await rpc("vault_read_secret", {
     secret_id: vaultSecretId,
   });
 
@@ -43,7 +51,8 @@ export async function readSecret(vaultSecretId: string): Promise<string> {
 export async function deleteSecret(vaultSecretId: string): Promise<void> {
   const supabase = await createServiceClient();
 
-  const { error } = await supabase.rpc("vault_delete_secret", {
+  const rpc = supabase.rpc.bind(supabase) as unknown as AnyRpc;
+  const { error } = await rpc("vault_delete_secret", {
     secret_id: vaultSecretId,
   });
 

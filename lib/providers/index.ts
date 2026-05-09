@@ -17,7 +17,7 @@ export function getLanguageModel(
 ) {
   switch (provider) {
     case "openai": {
-      const client = createOpenAI({ apiKey, baseUrl });
+      const client = createOpenAI({ apiKey, baseURL: baseUrl });
       return client(model);
     }
     case "anthropic": {
@@ -32,7 +32,7 @@ export function getLanguageModel(
       // Ollama is OpenAI-compatible
       const client = createOpenAI({
         apiKey: "ollama",
-        baseUrl: baseUrl ?? "http://localhost:11434/v1",
+        baseURL: baseUrl ?? "http://localhost:11434/v1",
       });
       return client(model);
     }
