@@ -10,7 +10,7 @@ export type IntentType =
   | "image_understanding"
   | "multi_step_task";
 
-export type ProviderType = "openai" | "anthropic" | "google" | "ollama";
+export type ProviderType = "openai" | "anthropic" | "google" | "ollama" | "groq";
 
 export interface OptimizationPreferences {
   accuracy: number;   // 0-1
@@ -28,11 +28,21 @@ export interface ModelConfig {
   contextWindow: number;
   costPer1kInput: number;
   costPer1kOutput: number;
-  strengths: IntentType[];
+  /**
+   * Per-task strength scores 0–1 based on benchmarks and known specialties.
+   * Omitted tasks fall back to the model's generic capabilityScore * 0.6.
+   */
+  strengths: Partial<Record<IntentType, number>>;
+  /**
+   * Baseline capability 0–1 derived from benchmark aggregates (MMLU, SWE-bench, MATH, etc.).
+   * Used as the accuracy signal — replaces the broken cost-as-proxy heuristic.
+   */
+  capabilityScore: number;
   avgLatencyMs: number;
   supportsTools: boolean;
   supportsVision: boolean;
   supportsStreaming: boolean;
+  isPlatformDefault?: boolean;
 }
 
 export interface ProviderConfig {
@@ -76,4 +86,5 @@ export interface RouterInput {
   availableProviders: ProviderConfig[];
   enabledPluginSlugs: string[];
   estimatedContextTokens: number;
+  disabledModels?: string[];
 }

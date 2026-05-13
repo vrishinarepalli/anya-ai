@@ -36,6 +36,14 @@ export function getLanguageModel(
       });
       return client(model);
     }
+    case "groq": {
+      // Groq is OpenAI-compatible
+      const client = createOpenAI({
+        apiKey,
+        baseURL: "https://api.groq.com/openai/v1",
+      });
+      return client(model);
+    }
     default:
       throw new Error(`Unsupported provider: ${provider}`);
   }
@@ -46,6 +54,7 @@ export const PROVIDER_LABELS: Record<ProviderType, string> = {
   anthropic: "Anthropic",
   google: "Google Gemini",
   ollama: "Ollama (Local)",
+  groq: "Groq (Free)",
 };
 
 export const PROVIDER_DOCS: Record<ProviderType, string> = {
@@ -53,6 +62,7 @@ export const PROVIDER_DOCS: Record<ProviderType, string> = {
   anthropic: "https://console.anthropic.com/settings/keys",
   google: "https://aistudio.google.com/app/apikey",
   ollama: "https://ollama.com",
+  groq: "https://console.groq.com/keys",
 };
 
 export const PROVIDER_COST_WARNING: Record<ProviderType, boolean> = {
@@ -60,4 +70,5 @@ export const PROVIDER_COST_WARNING: Record<ProviderType, boolean> = {
   anthropic: true,
   google: true,
   ollama: false,
+  groq: false,
 };

@@ -24,13 +24,11 @@ export function scoreModel(
     return disqualify(model, `Context too large (${ctx.estimatedContextTokens.toLocaleString()} tokens)`);
   }
 
-  // Task suitability: how well does this model's strengths match the intent
-  const taskSuitability = model.strengths.includes(ctx.intent) ? 1.0 : 0.4;
+  // Task suitability: per-task benchmark score, fallback to generic capability * 0.6
+  const taskSuitability = model.strengths[ctx.intent] ?? (model.capabilityScore * 0.6);
 
-  // Accuracy: proxy for model capability (cost-correlated heuristic)
-  const maxCost = 0.02;
-  const rawAccuracy = Math.min(model.costPer1kOutput / maxCost, 1);
-  const accuracy = 0.3 + rawAccuracy * 0.7; // floor at 0.3
+  // Accuracy: benchmark-derived capability score (replaces cost-as-proxy heuristic)
+  const accuracy = model.capabilityScore;
 
   // Speed: invert latency, normalize 500ms–5000ms range
   const speedRaw = 1 - Math.min(Math.max(model.avgLatencyMs - 500, 0) / 4500, 1);

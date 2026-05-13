@@ -9,24 +9,62 @@ import {
   Puzzle,
   BarChart2,
   Settings,
-  Zap,
+  Cpu,
+  Key,
+  SlidersHorizontal,
   LogOut,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
-import { cn } from "@/lib/utils";
 
-const NAV_ITEMS = [
+const MAIN_NAV = [
   { href: "/chat", label: "Chat", icon: MessageSquare },
   { href: "/workflows", label: "Workflows", icon: GitBranch },
   { href: "/plugins", label: "Plugins", icon: Puzzle },
   { href: "/analytics", label: "Analytics", icon: BarChart2 },
-  { href: "/settings/keys", label: "API Keys", icon: Settings },
-  { href: "/settings/preferences", label: "Preferences", icon: Puzzle },
+];
+
+const SETTINGS_NAV = [
+  { href: "/settings/models", label: "Models", icon: Cpu },
+  { href: "/settings/keys", label: "API Keys", icon: Key },
+  { href: "/settings/preferences", label: "Preferences", icon: SlidersHorizontal },
 ];
 
 interface SidebarProps {
   user: User;
+}
+
+function NavLink({ href, label, icon: Icon, pathname }: { href: string; label: string; icon: React.ElementType; pathname: string }) {
+  const active = pathname.startsWith(href);
+  return (
+    <Link
+      href={href}
+      className="relative flex items-center gap-3 px-3 py-2 text-xs tracking-[0.06em] uppercase font-medium transition-all duration-150"
+      style={{
+        color: active ? "var(--text-primary)" : "var(--text-muted)",
+        background: active ? "var(--bg-lift)" : "transparent",
+        borderLeft: active ? "2px solid var(--accent)" : "2px solid transparent",
+      }}
+      onMouseEnter={(e) => {
+        if (!active) {
+          e.currentTarget.style.color = "var(--text-secondary)";
+          e.currentTarget.style.background = "var(--bg-lift)";
+        }
+      }}
+      onMouseLeave={(e) => {
+        if (!active) {
+          e.currentTarget.style.color = "var(--text-muted)";
+          e.currentTarget.style.background = "transparent";
+        }
+      }}
+    >
+      <Icon
+        className="w-3.5 h-3.5 shrink-0"
+        style={{ color: active ? "var(--accent)" : "inherit" }}
+      />
+      {label}
+    </Link>
+  );
 }
 
 export function Sidebar({ user }: SidebarProps) {
@@ -46,60 +84,104 @@ export function Sidebar({ user }: SidebarProps) {
     "User";
 
   const avatarUrl = user.user_metadata?.avatar_url;
+  const initials = displayName.slice(0, 2).toUpperCase();
 
   return (
-    <aside className="w-56 flex flex-col border-r border-zinc-800 bg-zinc-950 shrink-0">
-      <div className="h-14 flex items-center px-4 border-b border-zinc-800">
-        <Link href="/chat" className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-violet-600 flex items-center justify-center">
-            <Zap className="w-4 h-4 text-white" />
+    <aside
+      className="w-52 flex flex-col shrink-0"
+      style={{
+        background: "var(--bg-surface)",
+        borderRight: "1px solid var(--border)",
+      }}
+    >
+      {/* Logo */}
+      <div
+        className="h-[52px] flex items-center px-5 shrink-0"
+        style={{ borderBottom: "1px solid var(--border)" }}
+      >
+        <Link href="/chat" className="flex items-center gap-2.5">
+          <div
+            className="w-6 h-6 flex items-center justify-center text-xs font-bold"
+            style={{ background: "var(--accent)", color: "#09090f" }}
+          >
+            A
           </div>
-          <span className="font-semibold text-white text-sm tracking-tight">Anya</span>
+          <span
+            className="text-sm font-semibold tracking-tight"
+            style={{ color: "var(--text-primary)" }}
+          >
+            Anya
+          </span>
         </Link>
       </div>
 
-      <nav className="flex-1 py-4 px-2 space-y-0.5">
-        {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
-          const active = pathname.startsWith(href);
-          return (
-            <Link
-              key={href}
-              href={href}
-              className={cn(
-                "flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors",
-                active
-                  ? "bg-zinc-800 text-white font-medium"
-                  : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900"
-              )}
-            >
-              <Icon className="w-4 h-4 shrink-0" />
-              {label}
-            </Link>
-          );
-        })}
+      {/* Main nav */}
+      <nav className="flex-1 overflow-y-auto py-3 px-2 flex flex-col gap-0.5">
+        {MAIN_NAV.map((item) => (
+          <NavLink key={item.href} {...item} pathname={pathname} />
+        ))}
+
+        {/* Settings section */}
+        <div
+          className="mt-4 mb-1 px-3 flex items-center gap-2"
+        >
+          <span
+            className="text-[9px] tracking-[0.2em] uppercase font-medium"
+            style={{ color: "var(--text-dim)" }}
+          >
+            Settings
+          </span>
+          <div className="flex-1 h-px" style={{ background: "var(--border)" }} />
+        </div>
+
+        {SETTINGS_NAV.map((item) => (
+          <NavLink key={item.href} {...item} pathname={pathname} />
+        ))}
       </nav>
 
-      <div className="p-3 border-t border-zinc-800">
-        <div className="flex items-center gap-2.5 px-2 py-1.5 mb-1">
+      {/* User footer */}
+      <div
+        className="shrink-0 p-3 flex flex-col gap-1"
+        style={{ borderTop: "1px solid var(--border)" }}
+      >
+        <div className="flex items-center gap-2.5 px-3 py-2">
           {avatarUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={avatarUrl}
               alt={displayName}
-              className="w-6 h-6 rounded-full"
+              className="w-5 h-5 rounded-full object-cover"
             />
           ) : (
-            <div className="w-6 h-6 rounded-full bg-violet-600 flex items-center justify-center text-white text-xs font-medium">
-              {displayName[0].toUpperCase()}
+            <div
+              className="w-5 h-5 flex items-center justify-center text-[9px] font-bold"
+              style={{ background: "var(--bg-hover)", color: "var(--text-secondary)" }}
+            >
+              {initials}
             </div>
           )}
-          <span className="text-xs text-zinc-300 truncate flex-1">{displayName}</span>
+          <span
+            className="text-xs truncate flex-1"
+            style={{ color: "var(--text-secondary)" }}
+          >
+            {displayName}
+          </span>
         </div>
+
         <button
           onClick={signOut}
-          className="flex w-full items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900 transition-colors"
+          className="flex items-center gap-3 px-3 py-2 text-xs tracking-[0.06em] uppercase font-medium transition-all duration-150 w-full"
+          style={{ color: "var(--text-dim)" }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.color = "var(--text-muted)";
+            e.currentTarget.style.background = "var(--bg-lift)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.color = "var(--text-dim)";
+            e.currentTarget.style.background = "transparent";
+          }}
         >
-          <LogOut className="w-4 h-4" />
+          <LogOut className="w-3.5 h-3.5 shrink-0" />
           Sign out
         </button>
       </div>

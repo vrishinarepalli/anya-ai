@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { Zap } from "lucide-react";
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
@@ -25,43 +24,126 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 flex items-center justify-center p-4">
-      <div className="w-full max-w-sm space-y-8">
-        <div className="text-center space-y-3">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-violet-600">
-            <Zap className="w-6 h-6 text-white" />
+    <div
+      className="min-h-screen flex"
+      style={{ background: "var(--bg-void)", color: "var(--text-primary)" }}
+    >
+      {/* Left panel — branding */}
+      <div
+        className="hidden lg:flex flex-col justify-between w-80 shrink-0 p-10"
+        style={{ borderRight: "1px solid var(--border)", background: "var(--bg-surface)" }}
+      >
+        <div>
+          <div
+            className="w-7 h-7 flex items-center justify-center text-xs font-bold mb-12"
+            style={{ background: "var(--accent)", color: "var(--bg-void)" }}
+          >
+            A
           </div>
-          <h1 className="text-2xl font-semibold text-white tracking-tight">Anya</h1>
-          <p className="text-sm text-zinc-400">
-            Intelligent AI orchestration — bring your own keys
+          <h2
+            className="text-2xl font-semibold tracking-tight leading-tight mb-4"
+            style={{ fontFamily: "var(--font-ui)" }}
+          >
+            Multi-model AI,<br />intelligently routed.
+          </h2>
+          <p className="text-sm leading-relaxed" style={{ color: "var(--text-muted)" }}>
+            Bring your own API keys. Anya selects the optimal model for every request — automatically.
           </p>
         </div>
 
-        <div className="space-y-3">
-          <button
-            onClick={signInWithGitHub}
-            disabled={loading}
-            className="w-full flex items-center justify-center gap-3 px-4 py-2.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-white text-sm font-medium transition-colors disabled:opacity-50 border border-zinc-700"
-          >
-            <GitHubIcon />
-            Continue with GitHub
-          </button>
-
-          <button
-            onClick={signInWithGoogle}
-            disabled={loading}
-            className="w-full flex items-center justify-center gap-3 px-4 py-2.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-white text-sm font-medium transition-colors disabled:opacity-50 border border-zinc-700"
-          >
-            <GoogleIcon />
-            Continue with Google
-          </button>
+        <div className="space-y-4">
+          {["GPT-4", "Claude 3.5", "Gemini Pro"].map((model) => (
+            <div key={model} className="flex items-center gap-3">
+              <div
+                className="w-1.5 h-1.5 rounded-full"
+                style={{ background: "var(--accent)" }}
+              />
+              <span className="text-xs" style={{ color: "var(--text-muted)" }}>
+                {model}
+              </span>
+            </div>
+          ))}
         </div>
+      </div>
 
-        <p className="text-center text-xs text-zinc-600">
-          By continuing, you agree to our Terms of Service.
-          <br />
-          Your API keys are encrypted and never shared.
-        </p>
+      {/* Right panel — auth */}
+      <div className="flex-1 flex items-center justify-center p-8">
+        <div className="w-full max-w-xs space-y-10">
+          {/* Mobile logo */}
+          <div className="lg:hidden flex items-center gap-3">
+            <div
+              className="w-7 h-7 flex items-center justify-center text-xs font-bold"
+              style={{ background: "var(--accent)", color: "var(--bg-void)" }}
+            >
+              A
+            </div>
+            <span className="text-sm font-semibold tracking-tight">Anya</span>
+          </div>
+
+          <div className="space-y-2">
+            <div
+              className="text-[10px] tracking-[0.2em] uppercase font-medium"
+              style={{ color: "var(--accent)" }}
+            >
+              Sign in
+            </div>
+            <h1
+              className="text-xl font-semibold tracking-tight"
+              style={{ fontFamily: "var(--font-ui)" }}
+            >
+              Welcome back
+            </h1>
+          </div>
+
+          <div className="space-y-3">
+            <button
+              onClick={signInWithGoogle}
+              disabled={loading}
+              className="w-full flex items-center gap-4 px-4 py-3 text-sm font-medium transition-all duration-150 disabled:opacity-40"
+              style={{
+                border: "1px solid var(--border-strong)",
+                color: "var(--text-primary)",
+                background: "transparent",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "var(--bg-lift)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "transparent";
+              }}
+            >
+              <GoogleIcon />
+              <span>Continue with Google</span>
+            </button>
+
+            <button
+              onClick={signInWithGitHub}
+              disabled={loading}
+              className="w-full flex items-center gap-4 px-4 py-3 text-sm font-medium transition-all duration-150 disabled:opacity-40"
+              style={{
+                border: "1px solid var(--border-strong)",
+                color: "var(--text-primary)",
+                background: "transparent",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "var(--bg-lift)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "transparent";
+              }}
+            >
+              <GitHubIcon />
+              <span>Continue with GitHub</span>
+            </button>
+          </div>
+
+          <p
+            className="text-[10px] leading-relaxed tracking-wide"
+            style={{ color: "var(--text-dim)" }}
+          >
+            API keys are encrypted with Supabase Vault and never shared with third parties.
+          </p>
+        </div>
       </div>
     </div>
   );
@@ -69,7 +151,7 @@ export default function LoginPage() {
 
 function GitHubIcon() {
   return (
-    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+    <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="currentColor">
       <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z" />
     </svg>
   );
@@ -77,7 +159,7 @@ function GitHubIcon() {
 
 function GoogleIcon() {
   return (
-    <svg className="w-4 h-4" viewBox="0 0 24 24">
+    <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
       <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
       <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
       <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />

@@ -23,9 +23,10 @@ export function NewWorkflowButton({ label }: { label?: string }) {
     <button
       onClick={create}
       disabled={loading}
-      className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-violet-600 hover:bg-violet-500 text-white text-sm font-medium disabled:opacity-60 transition-colors"
+      className="flex items-center gap-2 px-4 py-2 text-xs tracking-[0.08em] uppercase font-medium transition-opacity hover:opacity-80 disabled:opacity-40"
+      style={{ background: "var(--accent)", color: "var(--bg-void)" }}
     >
-      {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+      {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
       {label ?? "New Workflow"}
     </button>
   );

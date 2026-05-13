@@ -7,9 +7,12 @@ export async function route(input: RouterInput): Promise<RoutingDecision> {
   const { intent, confidence, requiresTools, requiresVision, estimatedComplexity } =
     classifyIntent(input.prompt, input.history);
 
-  // Filter to models available from user's connected providers
+  // Filter to models available from user's connected providers, minus user-disabled ones
   const connectedProviders = new Set(input.availableProviders.map((p) => p.provider));
-  const available = MODEL_REGISTRY.filter((m) => connectedProviders.has(m.provider));
+  const userDisabled = new Set(input.disabledModels ?? []);
+  const available = MODEL_REGISTRY.filter(
+    (m) => connectedProviders.has(m.provider) && !userDisabled.has(m.model)
+  );
 
   if (available.length === 0) {
     throw new Error("No AI providers connected. Add an API key in Settings → API Keys.");
